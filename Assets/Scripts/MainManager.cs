@@ -15,6 +15,7 @@ public class MainManager : MonoBehaviour
     
     private bool m_Started = false;
     private int m_Points;
+    private string m_Player;
     
     private bool m_GameOver = false;
 
@@ -25,6 +26,8 @@ public class MainManager : MonoBehaviour
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
+        m_Player = FlowManager.Instance.playerName;
+
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
         {
@@ -36,6 +39,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        AddPoint(0);
     }
 
     private void Update()
@@ -65,7 +69,14 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        if (m_Player[m_Player.Length - 1] != 's')
+        {
+            ScoreText.text = $"{m_Player}'s Score : {m_Points}";
+        }
+        else
+        {
+            ScoreText.text = $"{m_Player}' Score : {m_Points}";
+        }
     }
 
     public void GameOver()
