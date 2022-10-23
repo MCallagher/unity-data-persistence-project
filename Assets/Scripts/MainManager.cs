@@ -22,17 +22,14 @@ public class MainManager : MonoBehaviour
     private bool m_GameOver = false;
 
     private HighScoreData highScoreData;
-    private string dataFilename;
 
     // Start is called before the first frame update
     void Start()
     {
-        dataFilename = $"{Application.persistentDataPath}/high_score_data.json";
-
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
-        m_Player = FlowManager.Instance.playerName;
+        m_Player = Player.Instance.PlayerName;
 
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
@@ -48,6 +45,8 @@ public class MainManager : MonoBehaviour
         AddPoint(0);
         LoadHighScore();
         UpdateHighScore();
+
+        Debug.Log(highScoreData.ToString());
     }
 
     private void Update()
@@ -87,49 +86,37 @@ public class MainManager : MonoBehaviour
         }
     }
 
+    void LoadHighScore()
+    {
+        highScoreData = HighScoreData.LoadHighScore();
+    }
+
     void UpdateHighScore()
     {
-        HighScoreText.text = $"High score : {highScoreData.name} {highScoreData.score}";
+        if (highScoreData.leaderboard.Count > 0)
+        {
+            HighScoreText.text = $"High score : {highScoreData.leaderboard[0].name} {highScoreData.leaderboard[0].score}";
+        }
+        else
+        {
+            HighScoreText.text = "No high score yet";
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
-        if (m_Points > highScoreData.score)
+        
+        HighScoreEntry entry = new HighScoreEntry(m_Player, m_Points);
+
+        if (highScoreData.IsHighScore(entry))
         {
-            highScoreData.name = m_Player;
-            highScoreData.score = m_Points;
+            highScoreData.AddEntry(entry);
             UpdateHighScore();
-            StoreHighScore();
+            HighScoreData.StoreHighScore(highScoreData);
         }
-    }
 
-    [System.Serializable]
-    class HighScoreData
-    {
-        public string name;
-        public int score;
-    }
-
-    private void LoadHighScore()
-    {
-        if (File.Exists(dataFilename))
-        {
-            string json = File.ReadAllText(dataFilename);
-            highScoreData = JsonUtility.FromJson<HighScoreData>(json);
-        }
-        else
-        {
-            highScoreData = new HighScoreData();
-            highScoreData.name = "Nobody";
-            highScoreData.score = 0;
-        }
-    }
-
-    private void StoreHighScore()
-    {
-        string json = JsonUtility.ToJson(highScoreData);
-        File.WriteAllText(dataFilename, json);
+        Debug.Log(highScoreData);
     }
 }
