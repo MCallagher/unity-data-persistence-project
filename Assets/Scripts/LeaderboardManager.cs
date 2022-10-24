@@ -11,7 +11,6 @@ public class LeaderboardManager : MonoBehaviour
     void Start()
     {
         HighScoreData data = HighScoreData.LoadHighScore();
-        
 
         string s = null;
         if (data.leaderboard.Count > 0)

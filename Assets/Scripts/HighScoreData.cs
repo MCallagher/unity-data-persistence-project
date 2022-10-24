@@ -72,4 +72,9 @@ public class HighScoreData
         }
         return s;
     }
+
+    public long Hashcode()
+    {
+        return Hash.Apply(ToString());
+    }
 }

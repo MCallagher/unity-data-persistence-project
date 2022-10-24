@@ -18,10 +18,10 @@ public class MainManager : MonoBehaviour
     private bool m_Started = false;
     private int m_Points;
     private string m_Player;
-    
     private bool m_GameOver = false;
 
     private HighScoreData highScoreData;
+    private float highScoreRefreshFreq = 2;
 
     // Start is called before the first frame update
     void Start()
@@ -43,10 +43,8 @@ public class MainManager : MonoBehaviour
             }
         }
         AddPoint(0);
-        LoadHighScore();
-        UpdateHighScore();
-
-        Debug.Log(highScoreData.ToString());
+        highScoreData = HighScoreData.LoadHighScore();
+        StartCoroutine(RefreshHighScore());
     }
 
     private void Update()
@@ -86,20 +84,43 @@ public class MainManager : MonoBehaviour
         }
     }
 
-    void LoadHighScore()
+    IEnumerator RefreshHighScore()
     {
-        highScoreData = HighScoreData.LoadHighScore();
-    }
+        long currLeaderboardHash = highScoreData.Hashcode();
+        int highScoreIndex = 0;
+        bool showHeader = true;
+        while (true)
+        {
+            if (currLeaderboardHash != highScoreData.Hashcode())
+            {
+                currLeaderboardHash = highScoreData.Hashcode();
+                highScoreIndex = 0;
+                showHeader = true;
+            }
 
-    void UpdateHighScore()
-    {
-        if (highScoreData.leaderboard.Count > 0)
-        {
-            HighScoreText.text = $"High score : {highScoreData.leaderboard[0].name} {highScoreData.leaderboard[0].score}";
-        }
-        else
-        {
-            HighScoreText.text = "No high score yet";
+            if (highScoreData.leaderboard.Count == 0)
+            {
+                HighScoreText.text = "No high score yet";
+            }
+            else
+            {
+                if (showHeader)
+                {
+                    HighScoreText.text = "High scores";
+                    showHeader = false;
+                }
+                else
+                {
+                    HighScoreText.text = $"#{highScoreIndex + 1} {highScoreData.leaderboard[highScoreIndex].name} {highScoreData.leaderboard[highScoreIndex].score}";
+                    highScoreIndex = (highScoreIndex + 1) % highScoreData.leaderboard.Count;
+                    if (highScoreIndex == 0)
+                    {
+                        showHeader = true;
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(highScoreRefreshFreq);
         }
     }
 
@@ -113,7 +134,6 @@ public class MainManager : MonoBehaviour
         if (highScoreData.IsHighScore(entry))
         {
             highScoreData.AddEntry(entry);
-            UpdateHighScore();
             HighScoreData.StoreHighScore(highScoreData);
         }
 
