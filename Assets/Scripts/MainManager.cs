@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using System.IO;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 
 public class MainManager : MonoBehaviour
 {
@@ -67,6 +70,10 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -136,7 +143,5 @@ public class MainManager : MonoBehaviour
             highScoreData.AddEntry(entry);
             HighScoreData.StoreHighScore(highScoreData);
         }
-
-        Debug.Log(highScoreData);
     }
 }
